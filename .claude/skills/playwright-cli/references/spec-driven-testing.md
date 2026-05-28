@@ -16,67 +16,62 @@ Goal: produce a spec file (e.g. `specs/<feature>.plan.md`) that enumerates the s
 
 ### 1.1 Prerequisite: workspace
 
-Check the workspace has Playwright installed before anything else:
+This project already has Playwright configured. Confirm:
 
 ```bash
-# Either of these confirms a workspace:
-test -f playwright.config.ts || test -f playwright.config.js
-npx --no-install playwright --version
+test -f playwright.config.ts && npx --no-install playwright --version
 ```
 
-If there is no Playwright install, bootstrap one and let the user pick the defaults:
-
-```bash
-npm init playwright@latest
-```
+Two projects are defined in `playwright.config.ts`:
+- `ui` — targets `http://localhost:5173`, matches `tests/ui/**/*.spec.ts`
+- `api` — targets `http://localhost:8080`, matches `tests/api/**/*.spec.ts`
 
 ### 1.2 Prerequisite: seed test
 
-A **seed test** is a minimal test that lands the page in the state every scenario starts from: navigation to the app, any required login, feature flags, etc. Scenarios assume a fresh start *after* the seed. `--debug=cli` pauses *inside* this test, so the seed is where every planning and generation session begins.
+A **seed test** is a minimal test that lands the page in the state every scenario starts from. This project has extended fixtures in `fixtures/index.ts` that handle auth setup — always import from there.
 
-Minimum viable seed:
+**For UI tests**, create a seed in `tests/ui/`:
 
 ```ts
-// tests/seed.spec.ts
-import { test } from '@playwright/test';
+// tests/ui/seed.spec.ts
+import { test } from '../../fixtures';
 
 test('seed', async ({ page }) => {
-  await page.goto('https://example.com/');
+  await page.goto('/');
 });
 ```
 
-Preferred — push navigation into a fixture so scenario tests reuse it:
+**For authenticated UI flows**, use the `authenticatedPage` fixture:
 
 ```ts
-// tests/fixtures.ts
-import { test as baseTest } from '@playwright/test';
-export { expect } from '@playwright/test';
+// tests/ui/seed-auth.spec.ts
+import { test } from '../../fixtures';
 
-export const test = baseTest.extend({
-  page: async ({ page }, use) => {
-    await page.goto('https://example.com/');
-    await use(page);
-  },
+test('seed-auth', async ({ authenticatedPage }) => {
+  await authenticatedPage.goto('/workouts');
+  // Fixture pre-seeds sessionStorage with a valid user — app sees a logged-in session.
 });
 ```
+
+**For API tests**, use the `api` or `authenticatedApi` fixture:
 
 ```ts
-// tests/seed.spec.ts
-import { test } from './fixtures';
+// tests/api/seed.spec.ts
+import { test } from '../../fixtures';
 
-test('seed', async ({ page }) => {
-  // Fixture already navigates. This empty body tells agents where to start.
+test('seed-api', async ({ api }) => {
+  // api fixture provides an unauthenticated ApiClient
 });
 ```
 
-If no seed exists, create one that at least navigates to the app.
+Auth state in this project is stored as `sessionStorage.setItem('user', JSON.stringify(user))`, not cookies. The `authenticatedPage` and `pageWithApi` fixtures handle injection automatically via `page.addInitScript`.
 
 ### 1.3 Explore the app
 
-Launch the app via the seed in the background and attach:
+Launch the app via the seed in the background and attach. For UI tests use `--project=ui`:
 
 ```bash
-PLAYWRIGHT_HTML_OPEN=never npx playwright test tests/seed.spec.ts --debug=cli
+PLAYWRIGHT_HTML_OPEN=never npx playwright test tests/ui/seed.spec.ts --project=ui --debug=cli
 # wait for "Debugging Instructions" and the session name tw-XXXX
 playwright-cli attach tw-XXXX
 ```
@@ -104,7 +99,7 @@ Map out:
 
 ### 1.4 Write the spec file
 
-Save under `specs/<feature>.plan.md`. Use this structure:
+Save under `tests/ui/<feature>.plan.md` for UI specs or `tests/api/<feature>.plan.md` for API specs. Use this structure:
 
 ```markdown
 # <Feature> Test Plan
@@ -117,11 +112,11 @@ Save under `specs/<feature>.plan.md`. Use this structure:
 
 ### 1. <Group Name>
 
-**Seed:** `tests/seed.spec.ts`
+**Seed:** `tests/ui/seed.spec.ts`
 
 #### 1.1. <kebab-case-scenario-name>
 
-**File:** `tests/<group>/<kebab-case-scenario-name>.spec.ts`
+**File:** `tests/ui/<kebab-case-scenario-name>.spec.ts`
 
 **Steps:**
   1. <Concrete user step>
@@ -155,7 +150,7 @@ Goal: take a spec file and produce Playwright test files. Optionally update the 
 
 ### 2.1 Inputs
 
-- **Spec file**, e.g. `specs/basic-operations.plan.md`.
+- **Spec file**, e.g. `tests/ui/auth.plan.md`.
 - **Target**: either a single scenario (e.g. `1.2`), a whole group (`1`), or all.
 - **Seed file**, read from the `**Seed:**` line of the scenario's group.
 
@@ -164,7 +159,7 @@ Goal: take a spec file and produce Playwright test files. Optionally update the 
 For each target scenario, in sequence (never in parallel — scenarios share the seed session):
 
 ```bash
-PLAYWRIGHT_HTML_OPEN=never npx playwright test <seed-file> --debug=cli   # background
+PLAYWRIGHT_HTML_OPEN=never npx playwright test <seed-file> --project=ui --debug=cli   # background
 playwright-cli attach tw-XXXX
 # resume
 ```
@@ -187,25 +182,26 @@ For each `- expect:` bullet, add an explicit assertion. See [test-generation.md]
 Collect the generated code and write the test file at the path given in the spec:
 
 ```ts
-// spec: specs/basic-operations.plan.md
-// seed: tests/seed.spec.ts
-import { test, expect } from './fixtures';   // or '@playwright/test' if no fixtures file
+// spec: tests/ui/auth.plan.md
+// seed: tests/ui/seed.spec.ts
+import { test, expect } from '../../fixtures';  // always import from fixtures/index.ts
 
-test.describe('Singing in and out', () => {
-  test('should sign in', async ({ page }) => {
-    // 1. Navigate to the application
-    // (handled by the seed fixture)
+test.describe('Signing in and out', () => {
+  test('should sign in', async ({ page, api }) => {
+    // 1. Navigate to the login page
+    await page.goto('/login');
 
-    // 2. Type 'John Doe' into the username field
-    await page.getByRole('textbox', { name: 'username' }).fill('John Doe');
+    // 2. Type username into the username field
+    await page.getByRole('textbox', { name: 'username' }).fill('testuser');
 
     // 3. Type password
-    await page.getByRole('textbox', { name: 'password' }).fill('TestPassword');
+    await page.getByRole('textbox', { name: 'password' }).fill('TestPassword!1');
 
     // 4. Press Enter to submit
     await page.getByRole('textbox', { name: 'password' }).press('Enter');
 
-    await expect(page.getByRole('heading')).toContainText('Welcome, John Doe!');
+    await expect(page).toHaveURL('/');
+    await expect(page.getByRole('button', { name: 'Logout' })).toBeVisible();
   });
 });
 ```
@@ -215,7 +211,8 @@ Rules:
 - **One test per file.** File path, describe name, and test name come verbatim from the spec (minus the ordinal).
 - Prefix each numbered step with a `// N. <step text>` comment before its actions.
 - Use the describe group name verbatim from the spec (no `1.` ordinal).
-- Import from `./fixtures` if the project has one; otherwise `@playwright/test`.
+- **Always** import from `../../fixtures` (not `@playwright/test` directly) — the project's fixtures extend the base with `api`, `authenticatedApi`, `authenticatedPage`, `pageWithApi`.
+- Use `api` fixture for test data setup (registering users) rather than hardcoding credentials.
 - **Important**: close the CLI session and stop the background test before moving to the next scenario.
 
 ### 2.3 Generate multiple scenarios

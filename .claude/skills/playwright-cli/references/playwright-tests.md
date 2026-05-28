@@ -2,6 +2,32 @@
 
 To run Playwright tests, use the `npx playwright test` command, or a package manager script. To avoid opening the interactive html report, use `PLAYWRIGHT_HTML_OPEN=never` environment variable.
 
+## This project
+
+```bash
+# Run all tests (API + UI)
+PLAYWRIGHT_HTML_OPEN=never npm run test
+
+# Run only UI tests (project: ui, baseURL: http://localhost:5173)
+PLAYWRIGHT_HTML_OPEN=never npm run test:ui
+
+# Run only API tests (project: api, baseURL: http://localhost:8080)
+PLAYWRIGHT_HTML_OPEN=never npm run test:api
+
+# Run headed (browser visible)
+PLAYWRIGHT_HTML_OPEN=never npm run test:headed
+
+# Filter by project inline
+PLAYWRIGHT_HTML_OPEN=never npx playwright test --project=ui
+PLAYWRIGHT_HTML_OPEN=never npx playwright test --project=api
+```
+
+Environment variables (defaults already set in `playwright.config.ts`):
+- `FRONTEND_URL` — default `http://localhost:5173`
+- `BACKEND_URL` — default `http://localhost:8080`
+
+## General
+
 ```bash
 # Run all tests
 PLAYWRIGHT_HTML_OPEN=never npx playwright test

@@ -324,13 +324,14 @@ npm install -g @playwright/cli@latest
 ## Example: Form submission
 
 ```bash
-playwright-cli open https://example.com/form
+# FitTrack login flow (frontend: http://localhost:5173)
+playwright-cli open http://localhost:5173/login
 playwright-cli snapshot
 
-playwright-cli fill e1 "user@example.com"
-playwright-cli fill e2 "password123"
-playwright-cli click e3
-playwright-cli snapshot
+playwright-cli fill e1 "myuser"       # username field
+playwright-cli fill e2 "Password!1"   # password field
+playwright-cli click e3               # Sign In button
+playwright-cli snapshot               # should show authenticated nav
 playwright-cli close
 ```
 

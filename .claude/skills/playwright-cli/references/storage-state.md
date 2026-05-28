@@ -231,6 +231,38 @@ playwright-cli run-code "async page => {
 
 ### Authentication State Reuse
 
+#### This project (FitTrack — sessionStorage-based auth)
+
+This app stores auth in `sessionStorage` under the key `user` as a JSON object `{ id, username, token }`. Cookies and localStorage are not used for auth. To reuse an authenticated session interactively:
+
+```bash
+# Step 1: Register and login via the API
+playwright-cli open http://localhost:5173/login
+playwright-cli snapshot
+playwright-cli fill e1 "myuser"
+playwright-cli fill e2 "Password!1"
+playwright-cli click e3  # Sign In
+
+# Verify sessionStorage was populated
+playwright-cli --raw eval "sessionStorage.getItem('user')"
+# -> {"id":1,"username":"myuser","token":"..."}
+
+# Save full storage state (captures sessionStorage)
+playwright-cli state-save auth.json
+```
+
+```bash
+# Step 2: Restore state in a new session
+playwright-cli open http://localhost:5173
+playwright-cli state-load auth.json
+playwright-cli reload
+# sessionStorage is restored — app sees logged-in user
+```
+
+In Playwright tests, use the `authenticatedPage` or `pageWithApi` fixtures from `fixtures/index.ts` instead — they inject auth via `page.addInitScript` without needing a real login flow.
+
+#### Generic cookie-based auth
+
 ```bash
 # Step 1: Login and save state
 playwright-cli open https://app.example.com/login
