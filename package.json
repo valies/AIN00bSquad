@@ -6,6 +6,7 @@
     "test": "playwright test",
     "test:api": "playwright test --project=api",
     "test:ui": "playwright test --project=ui",
+    "test:testrunner" : "playwright test --ui",
     "test:headed": "playwright test --project=ui --headed",
     "test:debug": "playwright test --debug",
     "report": "playwright show-report"
