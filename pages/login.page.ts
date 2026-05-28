@@ -34,6 +34,10 @@ export class LoginPage extends BasePage {
     return this.page.locator('.auth-header h1');
   }
 
+  get loadingIndicator(): Locator {
+    return this.page.locator('.auth-submit-btn', { hasText: 'Processing...' });
+  }
+
   async login(username: string, password: string) {
     await this.usernameInput.fill(username);
     await this.passwordInput.fill(password);

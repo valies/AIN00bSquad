@@ -47,6 +47,10 @@ export class LogWorkoutPage extends BasePage {
     return this.page.locator('.exercise-row');
   }
 
+  removeExerciseButton(index: number): Locator {
+    return this.exerciseRows.nth(index).locator('.remove-exercise-button');
+  }
+
   async fillExercise(type: ExerciseType, sets: number, reps: number, weight: number) {
     await this.exerciseTypeSelect.selectOption(type);
     await this.setsInput.fill(String(sets));

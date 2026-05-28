@@ -9,7 +9,13 @@
     "test:testrunner" : "playwright test --ui",
     "test:headed": "playwright test --project=ui --headed",
     "test:debug": "playwright test --debug",
-    "report": "playwright show-report"
+    "report": "playwright show-report",
+    "pipeline": "claude --dangerously-skip-permissions -p '/test-pipeline'",
+    "pipeline:analyze": "claude --dangerously-skip-permissions -p '/analyze-stories'",
+    "pipeline:map": "claude --dangerously-skip-permissions -p '/map-endpoints'",
+    "pipeline:backend": "claude --dangerously-skip-permissions -p '/generate-backend-tests'",
+    "pipeline:frontend": "claude --dangerously-skip-permissions -p '/generate-frontend-tests'",
+    "pipeline:run": "claude --dangerously-skip-permissions -p '/run-tests'"
   },
   "devDependencies": {
     "@playwright/test": "^1.45.0",

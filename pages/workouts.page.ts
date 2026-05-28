@@ -46,6 +46,22 @@ export class WorkoutsPage extends BasePage {
     return this.page.locator('button', { hasText: 'Delete' }).last();
   }
 
+  get cancelDeleteButton(): Locator {
+    return this.page.locator('button', { hasText: 'Cancel' });
+  }
+
+  sessionDate(index: number): Locator {
+    return this.sessionCard(index).locator('.workout-date');
+  }
+
+  exerciseStats(cardIndex: number): Locator {
+    return this.sessionCard(cardIndex).locator('.session-exercise-stats');
+  }
+
+  get loadingSpinner(): Locator {
+    return this.page.locator('.spinner');
+  }
+
   async deleteSession(index: number) {
     await this.deleteButton(index).click();
     // Confirm in the "Delete this workout?" dialog

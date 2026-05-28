@@ -1,6 +1,7 @@
 import { test, expect } from '../../fixtures';
 
 test.describe('Health', () => {
+  // TC-001
   test('GET /health returns status ok', async ({ api }) => {
     const res = await api.health();
 

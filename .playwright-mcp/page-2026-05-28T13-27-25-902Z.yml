@@ -1,0 +1,34 @@
+- generic [ref=e2]:
+  - navigation [ref=e3]:
+    - link "FitTrack" [ref=e4] [cursor=pointer]:
+      - /url: /
+      - img [ref=e5]
+      - text: FitTrack
+    - generic [ref=e8]:
+      - link "Dashboard" [ref=e28] [cursor=pointer]:
+        - /url: /workouts
+      - link "Log Workout" [ref=e29] [cursor=pointer]:
+        - /url: /log-workout
+      - button "Logout" [ref=e30] [cursor=pointer]
+  - main [ref=e11]:
+    - generic [ref=e31]:
+      - generic [ref=e32]:
+        - heading "Track Your Fitness Journey With Confidence" [level=1] [ref=e33]:
+          - text: Track Your Fitness Journey
+          - text: With Confidence
+        - paragraph [ref=e34]: Log workouts, monitor your progress, and achieve your fitness goals with our intuitive platform.
+        - link "Go to Dashboard" [ref=e36] [cursor=pointer]:
+          - /url: /workouts
+      - generic [ref=e37]:
+        - generic [ref=e38]:
+          - generic [ref=e39]: 🏋️
+          - heading "Log Workouts" [level=3] [ref=e40]
+          - paragraph [ref=e41]: Easily record sets, reps, and weights for all your exercises.
+        - generic [ref=e42]:
+          - generic [ref=e43]: 📈
+          - heading "Track Progress" [level=3] [ref=e44]
+          - paragraph [ref=e45]: Visualize your history and see your strength gains over time.
+        - generic [ref=e46]:
+          - generic [ref=e47]: 🎯
+          - heading "Hit Goals" [level=3] [ref=e48]
+          - paragraph [ref=e49]: Stay motivated by setting and crushing your personal bests.
